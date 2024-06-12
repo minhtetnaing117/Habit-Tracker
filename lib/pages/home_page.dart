@@ -21,7 +21,8 @@ class _HomePageState extends State<HomePage> {
         child: Center(
           child: CupertinoSwitch(
             value: Provider.of<ThemeProvider>(context).isDarkMode,
-            onChanged: (value) {},
+            onChanged: (value) =>
+            Provider.of<ThemeProvider>(context, listen: false).toggleTheme(),
           ),
         ),
       ),
