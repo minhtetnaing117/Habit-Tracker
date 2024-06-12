@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/components/my_drawer.dart';
 import 'package:habit_tracker/components/my_habit_tile.dart';
+import 'package:habit_tracker/components/my_heat_map.dart';
 import 'package:habit_tracker/database/habit_database.dart';
 import 'package:habit_tracker/models/habit.dart';
 import 'package:provider/provider.dart';
@@ -177,9 +179,45 @@ class _HomePageState extends State<HomePage> {
         onPressed: createNewHabit,
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.tertiary,
+        foregroundColor: Theme.of(context).colorScheme.inversePrimary,
         child: const Icon(Icons.add),
       ),
-      body: _buildHabitList(),
+      body: ListView(
+        children: [
+          // heatmap
+          _buildHeatMap(),
+
+          // habitlist
+          _buildHabitList(),
+        ],
+
+      ),
+    );
+  }
+
+  // build heat map
+  Widget _buildHeatMap(){
+    // habit database
+    final habitDatabase = context.watch<HabitDatabase>();
+
+    // current habits
+    List<Habit> currentHabits = habitDatabase.currentHabits;
+
+    // return heat map UI
+    return FutureBuilder<DateTime?>(
+        future: habitDatabase.getFirstLaunchDate(),
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return MyHeatMap(
+                startDate: snapshot.data!,
+                datasets: prepHeatMapDataset(currentHabits),
+            );
+          }
+          // handle case where no data is returned
+          else {
+            return Container();
+          }
+        }
     );
   }
 
@@ -194,6 +232,8 @@ class _HomePageState extends State<HomePage> {
     // return list of habits UI
     return ListView.builder(
       itemCount: currentHabits.length,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (context, index){
           // get each invidual habit
           final habit = currentHabits[index];
